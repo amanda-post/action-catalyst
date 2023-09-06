@@ -38,12 +38,17 @@ model Session {
 model User {
   id            String    @id @default(cuid())
   name          String?
-  username      String    @unique
-  password      String
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
+
+  username String @unique
+  password String
+
+  totalPointsAvailable Int
+  totalPointsEarned    Int
+  historyLogs          History[]
 }
 
 model VerificationToken {
@@ -52,4 +57,25 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Task {
+  id          Int    @id @default(autoincrement())
+  description String
+  pointValue  Int
+}
+
+model Reward {
+  id          Int    @id @default(autoincrement())
+  description String
+  pointCost   Int
+}
+
+model History {
+  id               Int      @id @default(autoincrement())
+  userId           String
+  timestamp        DateTime @default(now())
+  description      String
+  pointValueChange Int
+  user             User     @relation(fields: [userId], references: [id])
 }
