@@ -46,9 +46,11 @@ model User {
   username String @unique
   password String
 
-  totalPointsAvailable Int
-  totalPointsEarned    Int
+  totalPointsAvailable Int       @default(0)
+  totalPointsEarned    Int       @default(0)
   historyLogs          History[]
+  Task                 Task[]
+  Reward               Reward[]
 }
 
 model VerificationToken {
@@ -61,14 +63,18 @@ model VerificationToken {
 
 model Task {
   id          Int    @id @default(autoincrement())
+  userId      String
   description String
   pointValue  Int
+  user        User   @relation(fields: [userId], references: [id])
 }
 
 model Reward {
   id          Int    @id @default(autoincrement())
+  userId      String
   description String
   pointCost   Int
+  user        User   @relation(fields: [userId], references: [id])
 }
 
 model History {
@@ -76,6 +82,8 @@ model History {
   userId           String
   timestamp        DateTime @default(now())
   description      String
+  quantity         Int
+  pointValue       Int
   pointValueChange Int
   user             User     @relation(fields: [userId], references: [id])
 }
