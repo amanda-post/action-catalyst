@@ -1,10 +1,7 @@
 'use client';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { MoreHorizontalIcon } from 'lucide-react';
-import { useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import {
   Rewards,
   Tasks,
@@ -36,15 +33,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import Spinner from '~/components/ui/spinner';
 import {
   Table,
   TableBody,
@@ -55,15 +46,6 @@ import {
 } from '~/components/ui/table';
 import { useToast } from '~/components/ui/use-toast';
 import { capitalize } from '~/lib/utils/helpers';
-
-const formSchema = z.object({
-  description: z
-    .string()
-    .nonempty({ message: 'Description is required' })
-    .min(2)
-    .max(50),
-  points: z.number().min(1).max(1000),
-});
 
 type Dialog = 'add' | 'edit' | 'delete';
 export type TableType = 'task' | 'reward';
@@ -101,25 +83,41 @@ type TableProps =
       tableType: 'reward';
     };
 
-//popover with quantity for complete/redeem, reusable?
+type FormValues = {
+  description: string;
+  points: number;
+};
+
+type EditFormParams = {
+  dialogType: 'add' | 'edit';
+  id?: number;
+  initialValues?: FormValues;
+};
+
 const ItemTable = ({ tableData, tableType }: TableProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState<{
+    isOpen: boolean;
+    id: number;
+  }>({ isOpen: false, id: 0 });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
-
-  const formInitialValues = {
-    description: '',
-    points: 1,
-  };
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: formInitialValues,
-  });
+  const formRef = useRef<HTMLFormElement>(null);
+  const descriptionInputRef = useRef<HTMLInputElement>(null);
+  const pointsInputRef = useRef<HTMLInputElement>(null);
 
   const generateOnAddOrEdit =
     ({ id, dialogType }: EditFormParams) =>
-    async ({ description, points }: z.infer<typeof formSchema>) => {
+    async (e: FormEvent) => {
+      e.preventDefault();
+      const form = new FormData(e.target as HTMLFormElement);
+      const description = form.get('description') as string;
+      const points = Number(form.get('points')) as number;
+      if (isLoading || !description || !points) return;
+
+      setIsLoading(true);
+
       try {
         if (dialogType === 'add') {
           await tableConfig.add[tableType]({ description, points });
@@ -142,10 +140,13 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
           )}.`,
         });
       }
+      setIsLoading(false);
       onOpenChange({ dialogType, isOpen: false });
     };
 
   const onDelete = async ({ id }: { id: number }) => {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       await tableConfig.delete[tableType]({ id });
       toast({
@@ -161,87 +162,90 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
         )}.`,
       });
     }
+    setIsLoading(false);
     onOpenChange({ dialogType: 'delete', isOpen: false });
+  };
+
+  const clearForm = () => {
+    formRef.current?.reset();
   };
 
   const onOpenChange = ({
     dialogType,
     isOpen,
+    id,
   }: {
     dialogType: Dialog;
     isOpen: boolean;
+    id?: number;
   }) => {
     switch (dialogType) {
       case 'add':
         setAddDialogOpen(isOpen);
         break;
       case 'edit':
-        setEditDialogOpen(isOpen);
+        setEditDialogOpen({ isOpen, id: id! });
         break;
       case 'delete':
         setDeleteDialogOpen(isOpen);
         break;
     }
-    if (!isOpen) form.reset(formInitialValues);
+    if (!isOpen) clearForm();
   };
 
-  type EditFormParams = {
-    id?: number;
-    dialogType: 'add' | 'edit';
-  };
-
-  const EditForm = ({ id, dialogType }: EditFormParams) => (
-    <Form {...form}>
+  const EditForm = ({ dialogType, id, initialValues }: EditFormParams) => {
+    const descriptionValue = descriptionInputRef.current?.value;
+    const pointsValue = pointsInputRef.current?.value;
+    return (
       <form
-        onSubmit={form.handleSubmit(generateOnAddOrEdit({ id, dialogType }))}
-        className='space-y-8'
+        onSubmit={generateOnAddOrEdit({ id, dialogType })}
+        className='space-y-6'
+        ref={formRef}
       >
-        <FormField
-          control={form.control}
-          name='description'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={tableConfig.placeholder[tableType]}
-                  {...field}
-                  autoFocus
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='points'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Point {tableType === 'task' ? 'Value' : 'Cost'}
-              </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type='number'
-                  {...form.register('points', {
-                    valueAsNumber: true,
-                  })}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div>
+          <Label>Description</Label>
+          <Input
+            name='description'
+            type='text'
+            minLength={1}
+            className='mt-4'
+            ref={descriptionInputRef}
+            defaultValue={
+              descriptionValue
+                ? descriptionValue
+                : initialValues?.description
+                ? initialValues.description
+                : ''
+            }
+          />
+        </div>
+
+        <div>
+          <Label>Point {tableType === 'task' ? 'Value' : 'Cost'}</Label>
+          <Input
+            name='points'
+            type='number'
+            min={1}
+            className='mt-4'
+            ref={pointsInputRef}
+            defaultValue={
+              pointsValue !== undefined && pointsValue !== null
+                ? pointsValue
+                : initialValues?.points
+                ? initialValues.points.toString()
+                : '1'
+            }
+          />
+        </div>
+
         <DialogFooter>
           <Button type='submit'>
-            {dialogType === 'add' ? 'Add' : 'Update'}
+            {isLoading ? <Spinner /> : dialogType === 'add' ? 'Add' : 'Update'}
           </Button>
         </DialogFooter>
       </form>
-    </Form>
-  );
+    );
+  };
 
   return (
     <Column>
@@ -279,16 +283,25 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
             return (
               <TableRow key={item.id}>
                 <Dialog
-                  open={editDialogOpen}
+                  open={editDialogOpen.isOpen && editDialogOpen.id === id}
                   onOpenChange={(isOpen: boolean) => {
-                    onOpenChange({ dialogType: 'edit', isOpen });
+                    onOpenChange({
+                      dialogType: 'edit',
+                      isOpen,
+                      id,
+                    });
                   }}
+                  key={id}
                 >
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Edit {capitalize(tableType)}</DialogTitle>
                     </DialogHeader>
-                    <EditForm id={id} dialogType='edit' />
+                    <EditForm
+                      id={id}
+                      dialogType='edit'
+                      initialValues={{ description, points }}
+                    />
                   </DialogContent>
                 </Dialog>
 
@@ -307,9 +320,9 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
                     </DialogHeader>
                     <Button
                       variant='destructive'
-                      onClick={() => onDelete({ id: id })}
+                      onClick={() => onDelete({ id })}
                     >
-                      Delete
+                      {isLoading ? <Spinner /> : 'Delete'}
                     </Button>
                   </DialogContent>
                 </Dialog>
@@ -325,10 +338,9 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem
-                        onClick={() => {
-                          form.reset({ description, points });
-                          onOpenChange({ dialogType: 'edit', isOpen: true });
-                        }}
+                        onClick={() =>
+                          onOpenChange({ dialogType: 'edit', isOpen: true, id })
+                        }
                       >
                         Edit {capitalize(tableType)}
                       </DropdownMenuItem>
