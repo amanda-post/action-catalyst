@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Reward, Task } from '~/app/(loggedInRoutes)/dashboard/actions';
 import {
   TableType,
   tableConfig,
@@ -19,7 +20,7 @@ const SubmitPopover = ({
   item,
 }: {
   tableType: TableType;
-  item: any; //TODO: Fix me
+  item: Task | Reward;
 }) => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);

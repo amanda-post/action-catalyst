@@ -18,89 +18,17 @@ export async function getUser() {
   return user;
 }
 
-export async function addTask({
-  description,
-  points,
-}: {
-  description: string;
-  points: number;
-}) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) throw new Error('User not found');
-  const task = await db.task.create({
-    data: {
-      userId,
-      description,
-      pointValue: points,
-    },
-  });
-  revalidatePath('/dashboard');
-  return task;
-}
-
-// export type Task = Awaited<ReturnType<typeof getTasks>>[number];
-// export type Tasks = Task[];
-
-export async function updateTask({
-  id,
-  description,
-  points,
-}: {
-  id: number;
-  description: string;
-  points: number;
-}) {
+export async function getTasks() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) throw new Error('User not found');
 
-  const task = await db.task.update({
+  const tasks = await db.task.findMany({
     where: {
-      id,
-      userId,
-    },
-    data: {
-      description,
-      pointValue: points,
-    },
-  });
-  return task;
-}
-
-export async function deleteTask({ id }: { id: number }) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) throw new Error('User not found');
-
-  const task = await db.task.delete({
-    where: {
-      id,
       userId,
     },
   });
-  return task;
-}
-
-export async function addReward({
-  description,
-  points,
-}: {
-  description: string;
-  points: number;
-}) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) throw new Error('User not found');
-
-  const reward = await db.reward.create({
-    data: {
-      userId,
-      description,
-      pointCost: points,
-    },
-  });
-  return reward;
+  return tasks;
 }
 
 export async function getRewards() {
@@ -119,8 +47,109 @@ export async function getRewards() {
   return rewards;
 }
 
+export async function getHistory() {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) throw new Error('User not found');
+
+  const historyLogs = await db.history.findMany({
+    where: {
+      userId: userId,
+    },
+    orderBy: {
+      timestamp: 'desc',
+    },
+  });
+  return historyLogs;
+}
+
+export type Task = Awaited<ReturnType<typeof getTasks>>[number];
+export type Tasks = Task[];
 export type Reward = Awaited<ReturnType<typeof getRewards>>[number];
 export type Rewards = Reward[];
+export type History = Awaited<ReturnType<typeof getHistory>>;
+
+export async function addTask({
+  description,
+  points,
+}: {
+  description: string;
+  points: number;
+}) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) throw new Error('User not found');
+
+  await db.task.create({
+    data: {
+      userId,
+      description,
+      pointValue: points,
+    },
+  });
+  revalidatePath('/dashboard');
+}
+
+export async function updateTask({
+  id,
+  description,
+  points,
+}: {
+  id: number;
+  description: string;
+  points: number;
+}) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) throw new Error('User not found');
+
+  await db.task.update({
+    where: {
+      id,
+      userId,
+    },
+    data: {
+      description,
+      pointValue: points,
+    },
+  });
+  revalidatePath('/dashboard');
+}
+
+export async function deleteTask({ id }: { id: number }) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) throw new Error('User not found');
+
+  await db.task.delete({
+    where: {
+      id,
+      userId,
+    },
+  });
+  revalidatePath('/dashboard');
+}
+
+export async function addReward({
+  description,
+  points,
+}: {
+  description: string;
+  points: number;
+}) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  if (!userId) throw new Error('User not found');
+
+  await db.reward.create({
+    data: {
+      userId,
+      description,
+      pointCost: points,
+    },
+  });
+  revalidatePath('/dashboard');
+}
 
 export async function updateReward({
   id,
@@ -135,7 +164,7 @@ export async function updateReward({
   const userId = session?.user?.id;
   if (!userId) throw new Error('User not found');
 
-  const reward = await db.reward.update({
+  await db.reward.update({
     where: {
       id,
       userId,
@@ -145,7 +174,7 @@ export async function updateReward({
       pointCost: points,
     },
   });
-  return reward;
+  revalidatePath('/dashboard');
 }
 
 export async function deleteReward({ id }: { id: number }) {
@@ -153,13 +182,13 @@ export async function deleteReward({ id }: { id: number }) {
   const userId = session?.user?.id;
   if (!userId) throw new Error('User not found');
 
-  const reward = await db.reward.delete({
+  await db.reward.delete({
     where: {
       id,
       userId,
     },
   });
-  return reward;
+  revalidatePath('/dashboard');
 }
 
 export async function completeTask({
@@ -184,7 +213,7 @@ export async function completeTask({
     throw new Error('Task not found or does not belong to the user');
   }
 
-  const updatedUser = await db.user.update({
+  await db.user.update({
     where: { id: userId },
     data: {
       totalPointsAvailable: {
@@ -196,7 +225,7 @@ export async function completeTask({
     },
   });
 
-  const history = await db.history.create({
+  await db.history.create({
     data: {
       userId,
       description: task.description,
@@ -206,7 +235,7 @@ export async function completeTask({
     },
   });
 
-  return { task, updatedUser, history };
+  revalidatePath('/dashboard');
 }
 
 export async function redeemReward({
@@ -242,7 +271,7 @@ export async function redeemReward({
     throw new Error('Not enough points to redeem this reward');
   }
 
-  const updatedUser = await db.user.update({
+  await db.user.update({
     where: { id: userId },
     data: {
       totalPointsAvailable: {
@@ -251,7 +280,7 @@ export async function redeemReward({
     },
   });
 
-  const history = await db.history.create({
+  await db.history.create({
     data: {
       userId,
       description: reward.description,
@@ -261,5 +290,5 @@ export async function redeemReward({
     },
   });
 
-  return { reward, updatedUser, history };
+  revalidatePath('/dashboard');
 }

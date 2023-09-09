@@ -1,20 +1,19 @@
-import { headers } from 'next/headers';
-import { getRewards, getUser } from '~/app/(loggedInRoutes)/dashboard/actions';
+import {
+  getHistory,
+  getRewards,
+  getTasks,
+  getUser,
+} from '~/app/(loggedInRoutes)/dashboard/actions';
+import HistoryLog from '~/app/(loggedInRoutes)/dashboard/components/HistoryLog';
 import ItemTable from '~/app/(loggedInRoutes)/dashboard/components/Table';
-import HistoryLog from '~/app/(loggedInRoutes)/history/page';
 import { Column, Row } from '~/components/Flex';
 
 export default async function Home() {
-  const getTasks = async () => {
-    const tasks = await fetch('http://localhost:3000/api/task', {
-      headers: headers(),
-    });
-    return tasks.json();
-  };
-  const [tasks, rewards, user] = await Promise.all([
+  const [tasks, rewards, user, history] = await Promise.all([
     getTasks(),
     getRewards(),
     getUser(),
+    getHistory(),
   ]);
 
   return (
@@ -36,7 +35,7 @@ export default async function Home() {
 
       <div className='pt-20 pl-20'>
         <h2 className='text-4xl font-bold '>History</h2>
-        <HistoryLog />
+        <HistoryLog history={history} />
       </div>
     </div>
   );
