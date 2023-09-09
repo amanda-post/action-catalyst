@@ -24,11 +24,11 @@ export default async function Home() {
       </div>
       <Row className='justify-center gap-x-20 pt-20'>
         <Column className='w-2/5'>
-          <h2 className='text-4xl font-bold text-center'>Tasks</h2>
+          <h2 className='text-4xl font-bold'>Tasks</h2>
           <ItemTable tableData={tasks} tableType='task' />
         </Column>
         <Column className='w-2/5'>
-          <h2 className='text-4xl font-bold text-center'>Rewards</h2>
+          <h2 className='text-4xl font-bold'>Rewards</h2>
           <ItemTable tableData={rewards} tableType='reward' />
         </Column>
       </Row>

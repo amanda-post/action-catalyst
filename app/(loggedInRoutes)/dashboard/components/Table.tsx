@@ -218,7 +218,9 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
           name='points'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Point Cost</FormLabel>
+              <FormLabel>
+                Point {tableType === 'task' ? 'Value' : 'Cost'}
+              </FormLabel>
               <FormControl>
                 <Input
                   {...field}
