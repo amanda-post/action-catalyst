@@ -28,9 +28,19 @@ export default function Login() {
           onSubmit={handleSubmitCredentials}
           className='w-[100%] flex flex-col items-center gap-y-6'
         >
-          <Input placeholder='Username' type='text' className='w-4/12 mt-8' />
+          <Input
+            placeholder='Username'
+            type='text'
+            name='username'
+            className='w-4/12 mt-8'
+          />
 
-          <Input placeholder='Password' type='password' className='w-4/12' />
+          <Input
+            placeholder='Password'
+            type='password'
+            name='password'
+            className='w-4/12'
+          />
           <Button
             variant='outline'
             className='w-4/12 outline outline-2 outline-violet-300 bg-violet-200 hover:bg-violet-400'
