@@ -1,6 +1,7 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { AuthOptions } from 'next-auth';
 import NextAuth from 'next-auth/next';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { z } from 'zod';
@@ -11,7 +12,7 @@ const loginUserSchema = z.object({
 });
 const prisma = new PrismaClient();
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -58,6 +59,8 @@ const handler = NextAuth({
     strategy: 'jwt',
   },
   secret: process.env.JWT_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

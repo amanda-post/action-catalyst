@@ -11,7 +11,6 @@ const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   const data = await request.json();
-  console.log({ data }, '-=-=-=-=-==-==-=-=-');
   const { username, password } = registerUserSchema.parse(data);
   const user = await prisma.user.findUnique({
     where: { username },
