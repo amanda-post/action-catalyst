@@ -2,6 +2,7 @@
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { FormEvent } from 'react';
+import { OrSeparator } from '~/app/login/components/OrSeparator';
 import { Button } from '~/components/ui/button';
 import { GitHubLogo, Logo, Text } from '~/components/ui/icons';
 import { Input } from '~/components/ui/input';
@@ -20,19 +21,19 @@ export default function Login() {
   return (
     <>
       <div className='flex items-center justify-center pt-24'>
-        <Logo className='h-16 w-auto mr-3 text-violet-700' />
+        <Logo className='mr-3 h-16 w-auto text-violet-700' />
         <Text className='h-12 w-auto text-violet-900' />
       </div>
-      <div className='flex flex-col min-h-screen items-center p-24 pt-0 gap-y-3'>
+      <div className='flex min-h-screen flex-col items-center gap-y-3 p-24 pt-0'>
         <form
           onSubmit={handleSubmitCredentials}
-          className='w-[100%] flex flex-col items-center gap-y-6'
+          className='flex w-[100%] flex-col items-center gap-y-6'
         >
           <Input
             placeholder='Username'
             type='text'
             name='username'
-            className='w-4/12 mt-8'
+            className='mt-8 w-4/12'
           />
 
           <Input
@@ -42,22 +43,24 @@ export default function Login() {
             className='w-4/12'
           />
           <Button
-            variant='outline'
-            className='w-4/12 outline outline-2 outline-violet-300 bg-violet-200 hover:bg-violet-400'
+            variant='ghost'
+            className='w-4/12 bg-violet-200 hover:bg-violet-400'
             type='submit'
           >
             Log In
           </Button>
         </form>
+
+        <OrSeparator />
+
         <Button
-          variant='outline'
-          className='mb-1 w-4/12 outline outline-2 outline-violet-400 bg-violet-300 hover:bg-violet-500'
+          variant='ghost'
+          className='mb-1	w-4/12 bg-violet-300 hover:bg-violet-500 hover:text-white'
           onClick={() => signIn('github')}
         >
           Log In with GitHub
-          <GitHubLogo className='w-6 ml-8' />
+          <GitHubLogo className='ml-8 w-6' />
         </Button>
-
         <p className='text-sm'>
           Haven&apos;t signed up yet?
           <Button variant='link'>

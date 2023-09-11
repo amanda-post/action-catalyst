@@ -9,6 +9,7 @@ export default withAuth(
     const isAuthorizationPage =
       req.nextUrl.pathname.includes('/login') ||
       req.nextUrl.pathname.includes('/register');
+    const isLandingPage = req.nextUrl.pathname === '/';
 
     if (isAuthorizationPage) {
       if (isAuthorized) {
@@ -18,7 +19,7 @@ export default withAuth(
       return null;
     }
 
-    if (!isAuthorized) {
+    if (!isAuthorized && !isLandingPage) {
       let from = req.nextUrl.pathname;
       if (req.nextUrl.search) {
         from += req.nextUrl.search;
