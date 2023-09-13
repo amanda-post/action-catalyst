@@ -19,7 +19,7 @@ const HistoryLog = async ({ history }: { history: History }) => (
           <TableHead>Description</TableHead>
           <TableHead>Quantity</TableHead>
           <TableHead>Value</TableHead>
-          <TableHead>Change</TableHead>
+          <TableHead className='text-right'>Change</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -31,8 +31,9 @@ const HistoryLog = async ({ history }: { history: History }) => (
             <TableCell>{event.pointValue}</TableCell>
             <TableCell
               className={cn(
+                'text-right',
                 isNegative(event.pointValueChange) && 'text-red-500',
-                !isNegative(event.pointValueChange) && 'text-green-500'
+                !isNegative(event.pointValueChange) && 'text-green-500',
               )}
             >
               {event.pointValueChange}

@@ -5,8 +5,6 @@ import { FormEvent, useRef, useState } from 'react';
 import {
   Rewards,
   Tasks,
-  addReward,
-  addTask,
   completeTask,
   deleteReward,
   deleteTask,
@@ -14,6 +12,7 @@ import {
   updateReward,
   updateTask,
 } from '~/app/(loggedInRoutes)/dashboard/actions';
+import ItemForm from '~/app/(loggedInRoutes)/dashboard/components/ItemForm';
 import SubmitPopover from '~/app/(loggedInRoutes)/dashboard/components/SubmitPopover';
 
 import { Column } from '~/components/Flex';
@@ -22,10 +21,8 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '~/components/ui/dialog';
 import {
   DropdownMenu,
@@ -33,8 +30,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
 import Spinner from '~/components/ui/spinner';
 import {
   Table,
@@ -51,10 +46,6 @@ type Dialog = 'add' | 'edit' | 'delete';
 export type TableType = 'task' | 'reward';
 
 export const tableConfig = {
-  add: {
-    task: addTask,
-    reward: addReward,
-  },
   edit: {
     task: updateTask,
     reward: updateReward,
@@ -76,11 +67,11 @@ export const tableConfig = {
 type TableProps =
   | {
       tableData: Tasks;
-      tableType: 'task';
+      itemType: 'task';
     }
   | {
       tableData: Rewards;
-      tableType: 'reward';
+      itemType: 'reward';
     };
 
 type FormValues = {
@@ -88,15 +79,8 @@ type FormValues = {
   points: number;
 };
 
-type EditFormParams = {
-  dialogType: 'add' | 'edit';
-  id?: number;
-  initialValues?: FormValues;
-};
-
-const ItemTable = ({ tableData, tableType }: TableProps) => {
+const ItemTable = ({ tableData, itemType }: TableProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState<{
     isOpen: boolean;
     id: number;
@@ -104,53 +88,42 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const descriptionInputRef = useRef<HTMLInputElement>(null);
-  const pointsInputRef = useRef<HTMLInputElement>(null);
 
-  const generateOnAddOrEdit =
-    ({ id, dialogType }: EditFormParams) =>
-    async (e: FormEvent) => {
-      e.preventDefault();
-      const form = new FormData(e.target as HTMLFormElement);
-      const description = form.get('description') as string;
-      const points = Number(form.get('points')) as number;
-      if (isLoading || !description || !points) return;
+  const handleSubmitEdit = async (e: FormEvent, id: number | undefined) => {
+    e.preventDefault();
+    const form = new FormData(e.target as HTMLFormElement);
+    const description = form.get('description') as string;
+    const points = Number(form.get('points')) as number;
+    if (isLoading || !description || !points) return;
 
-      setIsLoading(true);
+    setIsLoading(true);
 
-      try {
-        if (dialogType === 'add') {
-          await tableConfig.add[tableType]({ description, points });
-          toast({
-            description: `${capitalize(tableType)} added successfully!`,
-          });
-        } else if (dialogType === 'edit' && id) {
-          await tableConfig.edit[tableType]({ id, description, points });
-          toast({
-            description: `${capitalize(tableType)} updated successfully!`,
-          });
-        }
-      } catch (err) {
-        console.log(err);
-        toast({
-          variant: 'destructive',
-          title: 'Uh oh! Something went wrong.',
-          description: `There was a problem with adding your ${capitalize(
-            tableType
-          )}.`,
-        });
-      }
-      setIsLoading(false);
-      onOpenChange({ dialogType, isOpen: false });
-    };
+    try {
+      id && (await tableConfig.edit[itemType]({ id, description, points }));
+      toast({
+        description: `${capitalize(itemType)} updated successfully!`,
+      });
+    } catch (err) {
+      console.log(err);
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: `There was a problem with editing your ${capitalize(
+          itemType,
+        )}.`,
+      });
+    }
+    setIsLoading(false);
+    onOpenChange({ dialogType: 'edit', isOpen: false });
+  };
 
   const onDelete = async ({ id }: { id: number }) => {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      await tableConfig.delete[tableType]({ id });
+      await tableConfig.delete[itemType]({ id });
       toast({
-        description: `${capitalize(tableType)} deleted successfully!`,
+        description: `${capitalize(itemType)} deleted successfully!`,
       });
     } catch (err) {
       console.log(err);
@@ -158,7 +131,7 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
         description: `There was a problem with deleting your ${capitalize(
-          tableType
+          itemType,
         )}.`,
       });
     }
@@ -180,9 +153,6 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
     id?: number;
   }) => {
     switch (dialogType) {
-      case 'add':
-        setAddDialogOpen(isOpen);
-        break;
       case 'edit':
         setEditDialogOpen({ isOpen, id: id! });
         break;
@@ -193,84 +163,13 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
     if (!isOpen) clearForm();
   };
 
-  const EditForm = ({ dialogType, id, initialValues }: EditFormParams) => {
-    const descriptionValue = descriptionInputRef.current?.value;
-    const pointsValue = pointsInputRef.current?.value;
-    return (
-      <form
-        onSubmit={generateOnAddOrEdit({ id, dialogType })}
-        className='space-y-6'
-        ref={formRef}
-      >
-        <div>
-          <Label>Description</Label>
-          <Input
-            name='description'
-            type='text'
-            minLength={1}
-            className='mt-4'
-            ref={descriptionInputRef}
-            defaultValue={
-              descriptionValue
-                ? descriptionValue
-                : initialValues?.description
-                ? initialValues.description
-                : ''
-            }
-          />
-        </div>
-
-        <div>
-          <Label>Point {tableType === 'task' ? 'Value' : 'Cost'}</Label>
-          <Input
-            name='points'
-            type='number'
-            min={1}
-            className='mt-4'
-            ref={pointsInputRef}
-            defaultValue={
-              pointsValue !== undefined && pointsValue !== null
-                ? pointsValue
-                : initialValues?.points
-                ? initialValues.points.toString()
-                : '1'
-            }
-          />
-        </div>
-
-        <DialogFooter>
-          <Button type='submit'>
-            {isLoading ? <Spinner /> : dialogType === 'add' ? 'Add' : 'Update'}
-          </Button>
-        </DialogFooter>
-      </form>
-    );
-  };
-
   return (
     <Column>
-      <Dialog
-        open={addDialogOpen}
-        onOpenChange={(isOpen: boolean) => {
-          onOpenChange({ dialogType: 'add', isOpen });
-        }}
-      >
-        <DialogTrigger asChild>
-          <Button>Add {capitalize(tableType)}</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add {capitalize(tableType)} Type</DialogTitle>
-          </DialogHeader>
-          <EditForm dialogType='add' />
-        </DialogContent>
-      </Dialog>
-
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Description</TableHead>
-            <TableHead>Points</TableHead>
+            <TableHead className='text-right'>Points</TableHead>
             <TableHead />
             <TableHead className='w-[100px] p-0' />
           </TableRow>
@@ -295,12 +194,17 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
                 >
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Edit {capitalize(tableType)}</DialogTitle>
+                      <DialogTitle>Edit {capitalize(itemType)}</DialogTitle>
                     </DialogHeader>
-                    <EditForm
+
+                    <ItemForm
                       id={id}
                       dialogType='edit'
                       initialValues={{ description, points }}
+                      onSubmit={handleSubmitEdit}
+                      formRef={formRef}
+                      loading={isLoading}
+                      itemType={itemType}
                     />
                   </DialogContent>
                 </Dialog>
@@ -313,7 +217,7 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
                 >
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Delete {capitalize(tableType)}</DialogTitle>
+                      <DialogTitle>Delete {capitalize(itemType)}</DialogTitle>
                       <DialogDescription>
                         Are you sure? This cannot be undone.
                       </DialogDescription>
@@ -329,12 +233,12 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
 
                 <TableCell>{description}</TableCell>
 
-                <TableCell>{points}</TableCell>
+                <TableCell className='text-right'>{points}</TableCell>
 
-                <TableCell className='px-0'>
+                <TableCell className='flex justify-end px-0'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <MoreHorizontalIcon className='h-6 w-6 cursor-pointer' />
+                      <MoreHorizontalIcon className='mt-2 h-6 w-6 cursor-pointer' />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem
@@ -342,7 +246,7 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
                           onOpenChange({ dialogType: 'edit', isOpen: true, id })
                         }
                       >
-                        Edit {capitalize(tableType)}
+                        Edit {capitalize(itemType)}
                       </DropdownMenuItem>
 
                       <DropdownMenuItem
@@ -350,14 +254,14 @@ const ItemTable = ({ tableData, tableType }: TableProps) => {
                           onOpenChange({ dialogType: 'delete', isOpen: true })
                         }
                       >
-                        Delete {capitalize(tableType)}
+                        Delete {capitalize(itemType)}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
 
                 <TableCell className='px-0'>
-                  <SubmitPopover item={item} tableType={tableType} />
+                  <SubmitPopover item={item} itemType={itemType} />
                 </TableCell>
               </TableRow>
             );
