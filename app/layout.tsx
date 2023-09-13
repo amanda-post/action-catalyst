@@ -1,15 +1,27 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import clsx from 'clsx';
+import { Inter, Lexend } from 'next/font/google';
+
+import { type Metadata } from 'next';
 import SessionProviderWrapper from '~/components/SessionProviderWrapper';
 import { Toaster } from '~/components/ui/toaster';
-import './globals.css';
-
-const inter = Inter({ subsets: ['latin'] });
+import '~/styles/tailwind.css';
 
 export const metadata: Metadata = {
   title: 'Action Catalyst',
   description: 'Find motivation, get stuff done, and earn rewards.',
 };
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const lexend = Lexend({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-lexend',
+});
 
 export default function RootLayout({
   children,
@@ -17,10 +29,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en'>
+    <html
+      lang='en'
+      className={clsx(
+        'h-full scroll-smooth bg-white antialiased',
+        inter.variable,
+        lexend.variable,
+      )}
+    >
       <Toaster />
       <SessionProviderWrapper>
-        <body className={inter.className}>{children}</body>
+        <body className='flex h-full flex-col'>{children}</body>
       </SessionProviderWrapper>
     </html>
   );

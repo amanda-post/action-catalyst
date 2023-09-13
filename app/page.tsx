@@ -1,12 +1,23 @@
 'use client';
-import { useRouter } from 'next/navigation';
+
+import { About } from '~/components/About';
+import { Footer } from '~/components/Footer';
+import { Hero } from '~/components/Hero';
+import { LandingHeader } from '~/components/LandingHeader';
+import { PrimaryFeatures } from '~/components/PrimaryFeatures';
+import { SecondaryFeatures } from '~/components/SecondaryFeatures';
 
 export default function Home() {
-  const router = useRouter();
-
   return (
-    <main className='flex min-h-screen flex-col items-center justify-between p-24'>
-      <button onClick={() => router.push('/login')}>Go to Login</button>
-    </main>
+    <>
+      <LandingHeader />
+      <main>
+        <Hero />
+        <PrimaryFeatures />
+        <SecondaryFeatures />
+        <About />
+      </main>
+      <Footer />
+    </>
   );
 }

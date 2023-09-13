@@ -1,14 +1,21 @@
 'use client';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
+import { LogoHeader } from '~/app/login/components/LogoHeader';
 import { OrSeparator } from '~/app/login/components/OrSeparator';
 import { Button } from '~/components/ui/button';
-import { GitHubLogo, Logo, Text } from '~/components/ui/icons';
+import { GitHubLogo } from '~/components/ui/icons';
 import { Input } from '~/components/ui/input';
+import Spinner from '~/components/ui/spinner';
 
 export default function Login() {
+  const [credentialsLoading, setCredentialsLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
+
   const handleSubmitCredentials = async (e: FormEvent) => {
+    if (credentialsLoading) return;
+    setCredentialsLoading(true);
     e.preventDefault();
     const form = new FormData(e.target as HTMLFormElement);
 
@@ -18,16 +25,20 @@ export default function Login() {
       callbackUrl: '/dashboard',
     });
   };
+
+  const handleGithubLogin = () => {
+    if (githubLoading) return;
+    setGithubLoading(true);
+    signIn('github');
+  };
+
   return (
     <>
-      <div className='flex items-center justify-center pt-24'>
-        <Logo className='mr-3 h-16 w-auto text-violet-700' />
-        <Text className='h-12 w-auto text-violet-900' />
-      </div>
-      <div className='flex min-h-screen flex-col items-center gap-y-3 p-24 pt-0'>
+      <LogoHeader className='pt-24' size='lg' />
+      <div className='flex min-h-screen flex-col items-center gap-y-2 bg-gradient-to-b from-white to-violet-300 p-24 pt-0'>
         <form
           onSubmit={handleSubmitCredentials}
-          className='flex w-[100%] flex-col items-center gap-y-6'
+          className='flex w-[100%] flex-col items-center gap-y-4'
         >
           <Input
             placeholder='Username'
@@ -47,7 +58,7 @@ export default function Login() {
             className='w-4/12 bg-violet-200 hover:bg-violet-400'
             type='submit'
           >
-            Log In
+            {credentialsLoading ? <Spinner /> : 'Log In'}
           </Button>
         </form>
 
@@ -56,9 +67,9 @@ export default function Login() {
         <Button
           variant='ghost'
           className='mb-1	w-4/12 bg-violet-300 hover:bg-violet-500 hover:text-white'
-          onClick={() => signIn('github')}
+          onClick={handleGithubLogin}
         >
-          Log In with GitHub
+          {githubLoading ? <Spinner /> : 'Log In with GitHub'}
           <GitHubLogo className='ml-8 w-6' />
         </Button>
         <p className='text-sm'>

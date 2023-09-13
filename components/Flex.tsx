@@ -12,6 +12,8 @@ export const Column: React.FC<PropsWithChildren<{ className?: string }>> = ({
   className,
 }) => {
   return (
-    <div className={`flex-col ${className ? className : ''}`}>{children}</div>
+    <div className={`flex flex-col ${className ? className : ''}`}>
+      {children}
+    </div>
   );
 };

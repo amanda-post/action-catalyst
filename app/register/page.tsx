@@ -1,14 +1,21 @@
 'use client';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
+import { LogoHeader } from '~/app/login/components/LogoHeader';
 import { OrSeparator } from '~/app/login/components/OrSeparator';
 import { Button } from '~/components/ui/button';
-import { GitHubLogo, Logo, Text } from '~/components/ui/icons';
+import { GitHubLogo } from '~/components/ui/icons';
 import { Input } from '~/components/ui/input';
+import Spinner from '~/components/ui/spinner';
 
 export default function Register() {
-  async function handleSubmit(e: FormEvent) {
+  const [credentialsLoading, setCredentialsLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
+
+  async function handleCredentialsSubmit(e: FormEvent) {
+    if (credentialsLoading) return;
+    setCredentialsLoading(true);
     e.preventDefault();
     const form = new FormData(e.target as HTMLFormElement);
 
@@ -31,47 +38,51 @@ export default function Register() {
     });
   }
 
+  const handleGithubLogin = () => {
+    if (githubLoading) return;
+    setGithubLoading(true);
+    signIn('github');
+  };
+
   return (
-    <>
-      <div className='flex items-center justify-center pt-24'>
-        <Logo className='mr-3 h-16 w-auto text-violet-700' />
-        <Text className='h-12 w-auto text-violet-900' />
-      </div>
-      <div className='flex min-h-screen flex-col items-center gap-y-3 p-24 pt-0'>
+    <div className='bg-gradient-to-b from-violet-300'>
+      <LogoHeader className='pt-24' size='lg' />
+      <div className='flex min-h-screen flex-col items-center gap-y-2  p-24 pt-0'>
         <form
-          onSubmit={handleSubmit}
-          className='flex w-[100%] flex-col items-center gap-y-6'
+          onSubmit={handleCredentialsSubmit}
+          className='flex w-[100%] flex-col items-center gap-y-4'
         >
           <Input
             placeholder='Username'
             type='text'
-            className='mt-8 w-4/12'
+            className='mt-8  w-full md:w-1/2 lg:w-4/12'
             name='username'
           />
 
-          <div className='w-4/12'>
+          <div className=' w-full md:w-1/2 lg:w-4/12'>
             <Input placeholder='Password' type='password' name='password' />
-            <p className='pl-2 pt-1 text-xs text-red-500'>
-              Do not use existing passwords!
+            <p className='pl-2 pt-1 text-xs text-red-600'>
+              Must contain one uppercase letter, one lowercase, one number, and
+              one special character.
             </p>
           </div>
 
           <Button
             variant='secondary'
-            className='w-4/12 bg-violet-400 text-white hover:bg-violet-500'
+            className=' w-full bg-violet-400 text-white hover:bg-violet-500 md:w-1/2 lg:w-4/12'
             type='submit'
           >
-            Sign Up
+            {credentialsLoading ? <Spinner /> : 'Sign Up'}
           </Button>
         </form>
 
         <OrSeparator />
 
         <Button
-          className='mb-1 w-4/12 bg-violet-600 text-white outline hover:bg-violet-800'
-          onClick={() => signIn('github')}
+          className='mb-1  w-full bg-violet-600 text-white outline hover:bg-violet-600 md:w-1/2 lg:w-4/12'
+          onClick={handleGithubLogin}
         >
-          Sign Up with GitHub
+          {githubLoading ? <Spinner /> : 'Sign Up with GitHub'}
           <GitHubLogo className='ml-8 w-6' />
         </Button>
 
@@ -82,6 +93,6 @@ export default function Register() {
           </Button>
         </p>
       </div>
-    </>
+    </div>
   );
 }
