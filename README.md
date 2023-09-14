@@ -17,7 +17,7 @@ In today's fast-paced world, we've become accustomed to the allure of instant gr
 By using Action Catalyst, you're not just managing your to-do list; you're rewiring your brain to prioritize meaningful action over fleeting pleasure. The app serves as a catalyst for real, transformative change, helping you escape the instant gratification trap and move closer to a life of purpose and fulfillment.
 
 ## Deployed with Vercel at:
-[https://self-care-reward-system.vercel.app/](https://self-care-reward-system.vercel.app/)
+[https://action-catalyst.vercel.app/](https://action-catalyst.vercel.app/)
 
 ## Roadmap
 - [x] Initialize App
