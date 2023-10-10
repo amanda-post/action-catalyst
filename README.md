@@ -1,14 +1,22 @@
-# Why Action Catalyst is the Antidote to the Instant Gratification Trap
+# Check out these things of note in my project:
+- My usage of React, TypeScript, Next.js, and Prisma
+- The landing page (shows my marketing-page type of styling and interactivity)
+- Sign up with custom credentials or GitHub and try out my UX/UI to increase your productivity!
+
+## Deployed with Vercel at:
+[https://action-catalyst.vercel.app/](https://action-catalyst.vercel.app/)
+
+## Why Action Catalyst is the Antidote to the Instant Gratification Trap
 
 In today's fast-paced world, we've become accustomed to the allure of instant gratification. Whether it's binge-watching an entire TV series in a weekend, scrolling endlessly through social media, or ordering fast food at the tap of a button, we've been conditioned to seek immediate rewards. While these quick fixes offer a fleeting sense of pleasure, they often come at the expense of long-term goals and sustained well-being.
 
-## The Pitfalls of Instant Gratification
+### The Pitfalls of Instant Gratification
 - Short-lived Satisfaction: Instant gratification provides a temporary high, but the feeling quickly dissipates, leaving us craving more. This cycle can lead to addictive behaviors and diminish our capacity for delayed gratification, which is crucial for achieving meaningful goals.
 - Neglected Long-term Goals: When we're constantly chasing quick rewards, we tend to neglect the tasks that require sustained effort but offer far greater long-term benefits, such as career advancement, meaningful relationships, and personal growth.
 - Reduced Productivity: The habit of seeking immediate pleasure can disrupt our focus and productivity, making it difficult to complete tasks that require prolonged concentration and effort.
 - Emotional Toll: The constant need for immediate rewards can lead to increased stress, anxiety, and even depression when those quick fixes inevitably fail to provide lasting happiness.
 
-## How Action Catalyst Helps
+### How Action Catalyst Helps
 - Structured Goal-Setting: Action Catalyst employs proven psychological principles to help you set, track, and achieve both short-term tasks and long-term goals. By breaking down complex objectives into manageable tasks, the app makes the journey toward achievement less daunting.
 - Reward Mechanism: Unlike the empty calories of instant gratification, the app's reward system is designed to reinforce productive behaviors. You earn points for completing tasks, which can be redeemed for meaningful rewards that align with your values and long-term objectives.
 - Progress Tracking: The app provides real-time insights into your progress, helping you stay motivated and make data-driven adjustments to your strategies.
@@ -16,10 +24,7 @@ In today's fast-paced world, we've become accustomed to the allure of instant gr
 
 By using Action Catalyst, you're not just managing your to-do list; you're rewiring your brain to prioritize meaningful action over fleeting pleasure. The app serves as a catalyst for real, transformative change, helping you escape the instant gratification trap and move closer to a life of purpose and fulfillment.
 
-## Deployed with Vercel at:
-[https://action-catalyst.vercel.app/](https://action-catalyst.vercel.app/)
-
-## Roadmap
+### Roadmap
 - [x] Initialize App
 - [x] Login Page
 - [x] Register Page
